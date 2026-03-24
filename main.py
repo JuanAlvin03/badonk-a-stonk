@@ -5,9 +5,9 @@ import plotly.graph_objects as go
 from datetime import datetime
 from plotly.subplots import make_subplots
 
-def fetch_data(ticker):
+def fetch_data(ticker, period, interval):
     stock = yf.Ticker(ticker)
-    stockdf = stock.history(period='1d', interval='15m')
+    stockdf = stock.history(period=period, interval=interval)
     return stockdf, stock
 
 def create_plot(stockdf):
@@ -61,11 +61,37 @@ def main():
 
     ticker = st.text_input("Enter Ticker Symbol", value='AAPL')
 
+    # Period and Interval Selection
+    st.subheader("Period and Interval")
+    
+    periods = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '5y', 'max']
+    intervals_by_period = {
+        '1d': ['15m', '1h', '1d'],
+        '5d': ['15m', '1h', '1d'],
+        '1mo': ['1h', '1d', '1wk'],
+        '3mo': ['1d', '1wk', '1mo'],
+        '6mo': ['1d', '1wk', '1mo'],
+        '1y': ['1d', '1wk', '1mo'],
+        '5y': ['1d', '1wk', '1mo'],
+        'max': ['1d', '1wk', '1mo']
+    }
+
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.write("**Period:**")
+        selected_period = st.radio("Select Period:", periods, horizontal=True, key='period')
+    
+    with col2:
+        st.write("**Interval:**")
+        available_intervals = intervals_by_period[selected_period]
+        selected_interval = st.radio("Select Interval:", available_intervals, horizontal=True, key='interval')
+
     #==================================================================
     # Data Fetching
     #==================================================================
 
-    stockdf, stock = fetch_data(ticker)
+    stockdf, stock = fetch_data(ticker, selected_period, selected_interval)
 
     #==================================================================
     # Plot Creation
